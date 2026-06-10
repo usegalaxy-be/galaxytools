@@ -5,20 +5,30 @@
 ################################################################################################
 
 import argparse
-import pandas as pd
+import base64
+import datetime
+import logging
+import os
+import sys
 from json import dumps
+
+import pandas as pd
+import requests
+from jinja2 import Environment, FileSystemLoader
 from plotly import utils, express as px
+
 from Calculate_protein_properties import (get_isoelectric_point, calculate_dn_dc, calculate_total_masses,
                                           calculate_extinction_coefficient, get_net_charge)
 from Sequence_functions import normalize_sequence, check_protein_sequence, format_sequence, letter_count
 from references import amino_acid_data
-from jinja2 import Environment, FileSystemLoader
-import base64
-import requests
-import datetime
-import os
 
-# Tool version 
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler(sys.stderr)],
+)
+
+# Tool version
 VERSION = '1.1.0'
 
 def parse_arguments():
@@ -71,13 +81,13 @@ def main():
         else:
             name = fasta_name
 
-        print(f"Processing: {name}")
+        logging.info(f"Processing: {name}")
         # normalize sequence to remove whitespaces and convert to uppercase
         sequence = normalize_sequence(sequence)
         # check for invalid characters in the sequence
         error_message = check_protein_sequence(sequence)
         if error_message:
-            print(f"Error in {name}: {error_message}")
+            logging.error(f"Error in {name}: {error_message}")
             continue
 
         sequence_formatted = format_sequence(sequence, show_residue_number=True, line_length=55)
@@ -200,16 +210,15 @@ def main():
         if response.status_code == 200:
             # Parse the JSON response
             galaxy_version = response.json().get("version_major", "Unknown Galaxy Version")
-            #print(f"Galaxy Version: {galaxy_version}")
+            logging.info(f"Galaxy Version: {galaxy_version}")
         else:
-            #print(f"Failed to fetch Galaxy BE version. HTTP Status Code: {response.status_code}")
+            logging.warning(f"Failed to fetch Galaxy BE version. HTTP Status Code: {response.status_code}")
             galaxy_version = "Unknown"
 
         # Get current timestamp
         time_of_invocation = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        # Debug print statement
-        print(f"Time of Invocation: {time_of_invocation}")
+        logging.info(f"Time of Invocation: {time_of_invocation}")
 
         #############################
         #  Render HTML using Jinja2 #
@@ -245,25 +254,25 @@ def main():
         with open(html_report, 'w', encoding="utf-8") as f:
             f.write(output)
 
-        # Print Results as standard output for extra logging and easier debugging
-        print(f'Name: {name}')
-        print(f'Sequence: {sequence_formatted}')
-        print(f'Amino Acid Composition:')
-        print(
+        # Log results for extra debugging visibility
+        logging.info(f'Name: {name}')
+        logging.info(f'Sequence: {sequence_formatted}')
+        logging.info('Amino Acid Composition:')
+        logging.info(
             f'{"Amino Acid (Short)":<20} {"Amino Acid (Long)":<20} {"Monoisotopic Weight (Da)":<25} {"Average Weight (Da)":<25} {"# Counts":<10} {"% of Total":<10}')
         for aa in amino_acid_composition:
-            print(
+            logging.info(
                 f'{aa["amino_acid"]:<20} {aa["long_name"]:<20} {aa["mono_weight"]:<25} {aa["avg_weight"]:<25} {aa["count"]:<10} {aa["percentage"]:<10}')
-        print(f'Molecular Weight Info: {molecular_weight_info}')
-        print(f'Molar Absorbance Info: {molar_absorbance_info}')
-        print(f'pI: {pI}')
-        print(f'Net Charge at Different pH: {net_charge_at_different_pH}')
-        print(f'Titration Curve JSON: {titration_json}')
-        print(f'dn/dc Value: {dn_dc_value}')
+        logging.info(f'Molecular Weight Info: {molecular_weight_info}')
+        logging.info(f'Molar Absorbance Info: {molar_absorbance_info}')
+        logging.info(f'pI: {pI}')
+        logging.info(f'Net Charge at Different pH: {net_charge_at_different_pH}')
+        logging.info(f'Titration Curve JSON: {titration_json}')
+        logging.info(f'dn/dc Value: {dn_dc_value}')
 
-        print(f"HTML report rendered and saved to {html_report}")
-        print(f"PNG plot rendered and saved to {png_plot}")
-        print(f"Interactive plot rendered and saved to {html_plot}")
+        logging.info(f"HTML report rendered and saved to {html_report}")
+        logging.info(f"PNG plot rendered and saved to {png_plot}")
+        logging.info(f"Interactive plot rendered and saved to {html_plot}")
 
 if __name__ == '__main__':
     main()

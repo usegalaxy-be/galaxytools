@@ -1,0 +1,13 @@
+categories:
+- Proteomics
+- Sequence Analysis
+description: Calculate physico-chemical properties of a protein from its amino acid sequence
+long_description: |
+  Python-based tool that calculates protein properties from an amino acid sequence,
+  including molecular mass, extinction coefficient, isoelectric point, dn/dc, net charge,
+  and amino acid composition. Generates an HTML report and a titration curve plot.
+name: protein_calculator
+owner: b0r1sd
+homepage_url: https://github.com/KBalcaen/Protein_Calculator
+remote_repository_url: https://github.com/usegalaxy-be/galaxytools/tree/main/protein_calculator
+type: unrestricted

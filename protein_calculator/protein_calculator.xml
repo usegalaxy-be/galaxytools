@@ -15,7 +15,10 @@
         <include path="Calculate_protein_properties.py"/>
         <include path="Sequence_functions.py"/>
         <include path="references.py"/>
-        <include path="templates"/>
+        <include path="templates/index.html"/>
+        <include path="templates/results.html"/>
+        <include path="templates/export_view.html"/>
+        <include path="templates/protein_calc_error.html"/>
     </required_files>
     <stdio>
         <regex match="invalid character" source="both" level="fatal" description="Protein sequence contains invalid character(s). Please enter a valid Protein Sequence."/>
@@ -40,8 +43,8 @@
                 <option value="history">Use FASTA from history</option>
             </param>
             <when value="history">
-                <param argument="--name" type="text" value="" optional="true" label="Protein name" help="Name of the protein (optional; ignored if the FASTA contains multiple sequences — headers will be used)."/>
-                <param argument="--sequence" type="data" format="fasta" multiple="false" label="FASTA file from your history" help="Select a FASTA protein file containing one or more protein sequences. Output filenames are derived from the first word of each sequence header."/>
+                <param argument="--name" type="text" value="" optional="true" label="Protein name" help="Name of the protein (optional; ignored if the FASTA contains multiple sequences as then headers will automatically be used)."/>
+                <param argument="--sequence" type="data" format="fasta" multiple="false" label="FASTA file from your current history" help="Select a FASTA protein file containing one or more protein sequences. Output filenames are derived from the first word of each sequence header."/>
             </when>
             <when value="textbox">
                 <param argument="--name" type="text" value="" label="Protein name" help="Name of the protein.">
@@ -70,9 +73,19 @@
                 <param name="input_mode" value="history"/>
                 <param name="sequence" value="test_protein.fasta"/>
             </conditional>
-            <output name="output1" file="crab_anapl_report.html" count="1" ftype="html" compare="sim_size" delta="2000"/>
-            <output name="output2" file="crab_anapl_plot.png" count="1" ftype="png" compare="sim_size" delta="5000"/>
-            <output name="output3" count="1">
+            <output name="output1" count="1" ftype="html">
+                <assert_contents>
+                    <has_text text="crab_anapl"/>
+                    <has_text text="Amino Acid"/>
+                    <has_text text="pI"/>
+                </assert_contents>
+            </output>
+            <output name="output2" count="1" ftype="png">
+                <assert_contents>
+                    <has_size min="1000"/>
+                </assert_contents>
+            </output>
+            <output name="output3" count="1" ftype="html">
                 <assert_contents>
                     <has_text text="plotly"/>
                 </assert_contents>
@@ -82,11 +95,22 @@
             <conditional name="fasta_or_text">
                 <param name="input_mode" value="history"/>
                 <param name="sequence" value="test_protein.fasta"/>
-                <param name="name" value="crab_anapl"/>
             </conditional>
-            <output name="output1" file="crab_anapl_report.html" count="1" ftype="html" compare="sim_size" delta="2000"/>
-            <output name="output2" file="crab_anapl_plot.png" count="1" ftype="png" compare="sim_size" delta="5000"/>
-            <output name="output3" file="crab_anapl_interactive_plot.html" count="1" ftype="html" compare="sim_size" delta="50000"/>
+            <output name="output1" count="1" ftype="html">
+                <assert_contents>
+                    <has_text text="crab_anapl"/>
+                </assert_contents>
+            </output>
+            <output name="output2" count="1" ftype="png">
+                <assert_contents>
+                    <has_size min="1000"/>
+                </assert_contents>
+            </output>
+            <output name="output3" count="1" ftype="html">
+                <assert_contents>
+                    <has_text text="plotly"/>
+                </assert_contents>
+            </output>
         </test>
         <test expect_num_outputs="3">
             <conditional name="fasta_or_text">
@@ -94,17 +118,18 @@
                 <param name="name" value="test_name"/>
                 <param name="sequence" value="EASTEREGGEGG"/>
             </conditional>
-            <output name="output1" count="1">
+            <output name="output1" count="1" ftype="html">
                 <assert_contents>
                     <has_text text="test_name"/>
+                    <has_text text="pI"/>
                 </assert_contents>
             </output>
             <output name="output2" count="1" ftype="png">
                 <assert_contents>
-                    <has_size min="100"/>
+                    <has_size min="1000"/>
                 </assert_contents>
             </output>
-            <output name="output3" count="1">
+            <output name="output3" count="1" ftype="html">
                 <assert_contents>
                     <has_text text="plotly"/>
                 </assert_contents>
@@ -114,10 +139,20 @@
             <conditional name="fasta_or_text">
                 <param name="input_mode" value="history"/>
                 <param name="sequence" value="test_multiple_proteins.fasta"/>
+                <param name="name" value="ignored_test_name"/>
             </conditional>
-            <output name="output1" file="protein1_report.html" count="2" ftype="html" compare="sim_size" delta="2000"/>
-            <output name="output2" file="protein1_plot.png" count="2" ftype="png" compare="sim_size" delta="5000"/>
-            <output name="output3" count="2">
+            <output name="output1" count="2" ftype="html">
+                <assert_contents>
+                    <has_text text="protein1"/>
+                    <not_has_text text="ignored_test_name"/>
+                </assert_contents>
+            </output>
+            <output name="output2" count="2" ftype="png">
+                <assert_contents>
+                    <has_size min="1000"/>
+                </assert_contents>
+            </output>
+            <output name="output3" count="2" ftype="html">
                 <assert_contents>
                     <has_text text="plotly"/>
                 </assert_contents>
@@ -125,9 +160,7 @@
         </test>
     </tests>
     <help><![CDATA[
-**Protein Calculator**
-
-Determines protein properties from an amino acid sequence and summarises them in an HTML report with a Plotly titration curve, from the VIB Protein Core.
+This Python-based tool determines protein properties from an amino acid sequence and summarizes them in an HTML report with a Plotly titration curve. The tool originates from the VIB Protein Core.
 
 -----
 
@@ -138,21 +171,25 @@ Either:
 - A protein sequence pasted into a textbox (a name is required).
 - A FASTA file from history with one or more sequences. Output filenames are derived from the first word of each FASTA header. When a single sequence is provided, an optional ``--name`` overrides the header. When multiple sequences are provided, ``--name`` is ignored.
 
+        .. class:: warningmark 
+
+Although FASTA files containing multiple sequences are possible as input, it does not handle wrong sequences well. Make sure to ensure beforehand that all sequences are valid protein sequences.
+
 -----
 
 **Output**
 
 For each input sequence the tool produces three datasets:
 
-- ``report`` — full protein report (HTML).
-- ``titration curve`` — static titration curve (PNG).
-- ``interactive titration curve`` — interactive Plotly titration curve (HTML).
-
-When a multi-sequence FASTA is provided, each output slot will contain one dataset per sequence (named after the first word of the FASTA header).
+- ``report``: full protein report (HTML).
+- ``titration curve``: static titration curve (PNG).
+- ``interactive titration curve``: interactive Plotly titration curve (HTML).
 
 -----
 
-**Notes**
+    .. class:: infomark 
+
+    **Notes**
 
 - Maximum sequence length: 3000 residues.
 - Minimum sequence length: 10 residues.

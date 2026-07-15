@@ -6,6 +6,7 @@
         <requirement type="package">pandas</requirement>
     </requirements>
     <command detect_errors="exit_code"><![CDATA[
+        set -e -o pipefail;
         ln -s $fasta_file species_fasta.fa;
         ln -s $gff_file species.gff3;
         ln -s $gene_families_file families_file.txt;
@@ -24,7 +25,9 @@
         rm species.gff3;  
     ]]></command>
     <inputs>
-        <param name="species" type="text" label="Species, corresponding with species indicated in the gene family info file"/>
+        <param name="species" type="text" optional="false" label="Species, corresponding with species indicated in the gene family info file">
+            <validator type="empty_field"/>
+        </param>
         <param name="gene_families_file" type="data" format="tsv,tabular" label="gene family information file (tab-delimited) for the (coding) genes, separated per gene family type"/>
         <param name="fasta_file" type="data" format="fasta" label="FASTA file containing the genomic sequence of the species"/>
         <param name="gff_file" type="data" format="gff,gff3" label="gff3 file (tab-delimited) of the species containing gene, CDS, and exon features with positions relative to the fasta file"/>
@@ -51,6 +54,30 @@
         </data>
     </outputs>
     <help><![CDATA[
-        TODO: Fill in help.
+**What it does**
+
+SMAP-selector extracts the genomic FASTA sequences and GFF annotations for a
+set of genes of interest, optionally extending each gene's sequence with a
+flanking region on both sides. Genes of interest can be supplied directly as a
+list of genes, or indirectly as a list of homology groups (in which case all
+genes belonging to those groups, for the selected species, are retrieved).
+
+-----
+
+**Inputs**
+
+* **Species** – the species identifier, exactly as it appears in the gene family information file.
+* **Gene family information file** – tab-delimited file listing the (coding) genes per gene family type.
+* **FASTA file** – genomic sequence of the species.
+* **GFF3 file** – annotation of the species containing gene, CDS, and exon features with positions relative to the FASTA file.
+* **Genes / Homology groups file** – list of the genes of interest, or of the homology groups of interest.
+* **Region** – number of basepairs to extend the extracted sequence with on both sides (0 = no extension; if fewer basepairs are available, the maximum possible is used).
+
+-----
+
+**Outputs**
+
+* **FASTA outputs** – genomic sequence(s) of the selected genes (with optional flanking region).
+* **GFF outputs** – annotation(s) of the selected genes matching the extracted FASTA sequences.
     ]]></help>
 </tool>

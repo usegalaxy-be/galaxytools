@@ -56,28 +56,35 @@
     <help><![CDATA[
 **What it does**
 
-SMAP-selector extracts the genomic FASTA sequences and GFF annotations for a
-set of genes of interest, optionally extending each gene's sequence with a
-flanking region on both sides. Genes of interest can be supplied directly as a
-list of genes, or indirectly as a list of homology groups (in which case all
-genes belonging to those groups, for the selected species, are retrieved).
+This tool creates input FASTA and GFF files for a downstream script to design
+amplicons. It gets the sequences of the genes in selected homology groups in
+both FASTA format and GFF format. A list with selected homology groups or a
+list with selected genes can be given as input. When a gene list is given, the
+corresponding unique list of homology groups is derived from the gene family
+information file first; when a homology group list is given, all genes
+belonging to those groups for the selected species are used.
+
+For each selected homology group, one FASTA file and one matching GFF file are
+produced, containing the genes of that group for the selected species. The
+gene sequences can optionally be extended on both sides of the gene with a
+requested flanking (border) region.
 
 -----
 
 **Inputs**
 
-* **Species** – the species identifier, exactly as it appears in the gene family information file.
-* **Gene family information file** – tab-delimited file listing the (coding) genes per gene family type.
-* **FASTA file** – genomic sequence of the species.
-* **GFF3 file** – annotation of the species containing gene, CDS, and exon features with positions relative to the FASTA file.
-* **Genes / Homology groups file** – list of the genes of interest, or of the homology groups of interest.
-* **Region** – number of basepairs to extend the extracted sequence with on both sides (0 = no extension; if fewer basepairs are available, the maximum possible is used).
+* **Species** – species to extract, corresponding with species indicated in the gene family info file.
+* **Gene family information file** – gene family information for the (coding) genes, separated per gene family type (tab-delimited).
+* **FASTA file** – genome data in FASTA format.
+* **GFF3 file** – genome data in GFF format (tab-delimited), containing gene, CDS, and exon features with positions relative to the FASTA file.
+* **Genes / Homology groups file** – list with selected genes, or list with selected homology groups.
+* **Region** – requested border region extending both sides of the gene in bp (default 0 or enter a positive value; if fewer basepairs are available, the maximum possible is used).
 
 -----
 
 **Outputs**
 
-* **FASTA outputs** – genomic sequence(s) of the selected genes (with optional flanking region).
-* **GFF outputs** – annotation(s) of the selected genes matching the extracted FASTA sequences.
+* **FASTA outputs** – sequences of the genes in the selected homology groups (with optional flanking region).
+* **GFF outputs** – features of the genes in the selected homology groups, matching the extracted FASTA sequences.
     ]]></help>
 </tool>

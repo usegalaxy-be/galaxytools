@@ -6,6 +6,7 @@
         <requirement type="package">pandas</requirement>
     </requirements>
     <command detect_errors="exit_code"><![CDATA[
+        set -e -o pipefail;
         ln -s $fasta_file species_fasta.fa;
         ln -s $gff_file species.gff3;
         ln -s $gene_families_file families_file.txt;
@@ -24,7 +25,9 @@
         rm species.gff3;  
     ]]></command>
     <inputs>
-        <param name="species" type="text" label="Species, corresponding with species indicated in the gene family info file"/>
+        <param name="species" type="text" optional="false" label="Species, corresponding with species indicated in the gene family info file">
+            <validator type="empty_field"/>
+        </param>
         <param name="gene_families_file" type="data" format="tsv,tabular" label="gene family information file (tab-delimited) for the (coding) genes, separated per gene family type"/>
         <param name="fasta_file" type="data" format="fasta" label="FASTA file containing the genomic sequence of the species"/>
         <param name="gff_file" type="data" format="gff,gff3" label="gff3 file (tab-delimited) of the species containing gene, CDS, and exon features with positions relative to the fasta file"/>
@@ -51,6 +54,37 @@
         </data>
     </outputs>
     <help><![CDATA[
-        TODO: Fill in help.
+**What it does**
+
+This tool creates input FASTA and GFF files for a downstream script to design
+amplicons. It gets the sequences of the genes in selected homology groups in
+both FASTA format and GFF format. A list with selected homology groups or a
+list with selected genes can be given as input. When a gene list is given, the
+corresponding unique list of homology groups is derived from the gene family
+information file first; when a homology group list is given, all genes
+belonging to those groups for the selected species are used.
+
+For each selected homology group, one FASTA file and one matching GFF file are
+produced, containing the genes of that group for the selected species. The
+gene sequences can optionally be extended on both sides of the gene with a
+requested flanking (border) region.
+
+-----
+
+**Inputs**
+
+* **Species** – species to extract, corresponding with species indicated in the gene family info file.
+* **Gene family information file** – gene family information for the (coding) genes, separated per gene family type (tab-delimited).
+* **FASTA file** – genome data in FASTA format.
+* **GFF3 file** – genome data in GFF format (tab-delimited), containing gene, CDS, and exon features with positions relative to the FASTA file.
+* **Genes / Homology groups file** – list with selected genes, or list with selected homology groups.
+* **Region** – requested border region extending both sides of the gene in bp (default 0 or enter a positive value; if fewer basepairs are available, the maximum possible is used).
+
+-----
+
+**Outputs**
+
+* **FASTA outputs** – sequences of the genes in the selected homology groups (with optional flanking region).
+* **GFF outputs** – features of the genes in the selected homology groups, matching the extracted FASTA sequences.
     ]]></help>
 </tool>
